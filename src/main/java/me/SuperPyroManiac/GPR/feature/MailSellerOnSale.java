@@ -1,6 +1,8 @@
 package me.SuperPyroManiac.GPR.feature;
 
+import me.SuperPyroManiac.GPR.GPRealEstate;
 import me.SuperPyroManiac.GPR.events.GPRSaleEvent;
+import me.SuperPyroManiac.GPR.util.Color;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.event.EventHandler;
@@ -15,8 +17,8 @@ import org.bukkit.plugin.java.JavaPlugin;
  */
 public class MailSellerOnSale implements Listener
 {
-    private Plugin plugin;
-    public MailSellerOnSale(Plugin plugin)
+    private final GPRealEstate plugin;
+    public MailSellerOnSale(final GPRealEstate plugin)
     {
         this.plugin = plugin;
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
@@ -29,13 +31,13 @@ public class MailSellerOnSale implements Listener
         if (event.getClaim().ownerID == null)
             return;
 
-        String name = event.getClaim().getOwnerName();
+        final String owner = event.getClaim().getOwnerName();
+        final String buyer = event.getBuyer().getName();
+        final String location = getfriendlyLocationString(event.getClaim().getLesserBoundaryCorner());
+        final double price = event.getPrice();
 
-        String command = ChatColor.translateAlternateColorCodes('&', "mail send " + name +
-                " &f[&6GPAuctions&f] &a" + event.getBuyer().getName() + "&b has purchased your claim at &a" +
-                getfriendlyLocationString(event.getClaim().getLesserBoundaryCorner()) + " &b. The sale price was &a" +
-                event.getPrice() + "&b.");
-        plugin.getServer().dispatchCommand(plugin.getServer().getConsoleSender(), command);
+        final String message = plugin.getDataStore().mailSeler.replace("{buyer}", buyer).replace("{owner}", owner).replace("{location}", location).replace("{price}", String.valueOf(price));
+        plugin.getServer().dispatchCommand(plugin.getServer().getConsoleSender(), Color.colorize("mail send " + owner + " " + message));
     }
 
     public static String getfriendlyLocationString(Location location)
